@@ -1,0 +1,4 @@
+@ECHO OFF
+ECHO RUNNING SRE BOT
+
+npm run dev

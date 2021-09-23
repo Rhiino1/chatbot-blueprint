@@ -1,0 +1,33 @@
+#menuListDiv{
+  margin: 0;
+  width: 12vw;
+  height: 100vh;
+  background-color: #080855;
+}
+
+.linea-oculta{
+	display: none;
+}
+
+/* a {
+  color: #999;
+} */
+.current {
+  color: red;
+}
+ul {
+  padding: 0;
+  list-style-type: none;
+}
+li {
+  display: inline;
+  margin: 5px 5px;
+}
+
+a.first::after {
+  content:'...'
+}
+
+a.last::before {
+  content:'...'
+}

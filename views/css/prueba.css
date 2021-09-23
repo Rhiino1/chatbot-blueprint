@@ -1,0 +1,30 @@
+#lista li{
+  /* white-space: normal;
+  width: 50px; */
+}
+
+#lista{
+  width: 50px;
+  white-space: normal;
+}
+
+#div{
+  background-color: red;
+  animation-name: hola;
+  animation-duration: 3s;
+  animation-play-state: running;
+}
+
+@keyframes hola{
+  0%{
+    width: 100%;
+  }
+
+  85%{
+    opacity: 0.01;
+  }
+  100%{
+    width: 0%;
+    opacity: 0;
+  }
+}

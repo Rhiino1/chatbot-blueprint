@@ -1,0 +1,6 @@
+@ECHO OFF
+ECHO RUNNING SRE BOT
+
+D:
+cd D:\Proyectos\Bot_twitch\agdq2021
+npm run dev

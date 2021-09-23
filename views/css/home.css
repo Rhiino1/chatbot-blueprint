@@ -1,0 +1,15 @@
+body{
+  background-color: #01010F;
+  color: white;
+}
+
+#menuListDiv{
+  margin: 0;
+  width: 12vw;
+  height: 100vh;
+  background-color: #080855;
+}
+
+.marginTop2em{
+  margin-top: 2em;
+}

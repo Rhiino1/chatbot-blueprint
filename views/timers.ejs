@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timers</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/home.css">
+</head>
+
+<body>
+
+  <div id="menuListDiv">
+    <div class="h1 text-white text-center border-bottom border-primary" style="padding-bottom: .5rem">SRE</div>
+    <nav>
+      <a class="h5 nav-link" href="/"><i class="fa fa-fw fa-home"></i> Home</a>
+      <a class="h5 nav-link" href="/commands"><i class="fa fa-fw fa-file"></i>Commands</a>
+      <a class="h5 nav-link" href="/timers"><i class="fa fa-fw fa-clock"></i>Timers</a>
+      <a class="h5 nav-link" href="/schedule">Schedule</a>
+      <a class="h5 nav-link disabled" href="#">Documentation</a>
+    </nav>
+  </div>
+
+
+  <div id="timer-app">
+    <ul id="timersList">
+      <li v-for='timer in timers'>
+        {{timer.name}}
+      </li>
+    </ul>
+  </div>
+  <button onclick="getTimersArray()">timers</button>
+
+  <script>
+    function getTimersArray() {
+      fetch('http://127.0.0.1:8000/bot/timers/timerList', {
+        method: 'GET',
+      }).then(response => {
+        console.log(response);
+      })
+    }
+  </script>
+</body>
+
+</html>

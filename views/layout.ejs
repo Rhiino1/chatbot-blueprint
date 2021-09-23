@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESA2021</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.4.2/gsap.min.js"></script>
+</head>
+
+<body>
+
+    <!-- <img src="./images/30ab6c1a569786ed5883cdbec4ad79e5.jpg" alt="plantilla"
+        style="left: 240px; position: absolute; width: 1680px;"> -->
+
+    <img id="direct" src="./images/miniatura_awful.png" alt="">
+
+    <div id="left-bar">
+        <div class="bg-container"></div>
+        <div id="coms-title">
+            <div class="textMessagesBlack" id="coms-text">COMENTARISTAS</div>
+        </div>
+        <div id="coms">
+            <div id="coms-inner">
+            </div>
+        </div>
+        <div id="commands">
+            <span class="textBlack" id="textoCommands">Prueba a usar este comando:</span>
+        </div>
+    </div>
+
+    <div id="bot-bar">
+        <div id="logos">
+            <div id="gdq">
+                <img src="./images/logo-esa-solo.png" alt="sre_logo">
+            </div>
+            <div id="sre">
+                <img src="./images/SRE_3.png" alt="sre_logo">
+            </div>
+        </div>
+        <div id="animated-box">
+            <div class="animated-bars" id="animated-bar">
+                <div id="messages-container">
+                    <div id="saludo">
+                        <span class="textMessagesMedium" id="bienvenida">Retransmisión en español de la </span>
+                        <span class="textMessagesBlack" id="bienvenida">ESA SUMMER2021</span>
+                    </div>
+                </div>
+                <div id="next-container">
+                    <div class="textMessagesBlack" id="announceRunsList"><span>Más tarde:</span></div>
+                    <div id="arrowsRunsList"></div>
+                    <div class="text" id="nextRunsList"></div>
+                </div>
+                <div class="text" id="social-container">
+                    <div id="socialList">
+                        <div id="social-message">
+                            <span class="textMessagesBlack">Síguenos en nuestras redes sociales</span>
+                        </div>
+                        <div id="twitter">
+                            <img id="tw-icon" src="./images/twitter.svg" alt="twitter">
+                            <span class="textMessagesBlack">@SPEEDRUNESPANOL</span>
+                        </div>
+                        <div id="youtube">
+                            <img id="yt-icon" src="./images/youtube.svg" alt="youtube">
+                            <span class="textMessagesBlack" id="yt-text">SPEEDRUNSESPANOL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="animated-bars-right-side" id="animated-bar-right-side">
+            </div>
+        </div>
+        <!-- <div id="social">
+            
+        </div> -->
+
+    </div>
+    <div id="left-container">
+        <div id="line-left"></div>
+    </div>
+    <div id="bot-container">
+        <div id="line-bot"></div>
+    </div>
+
+
+    <button onclick="avanzar(this)" class="textMessagesBlack" id="avanzar"
+        style="position: absolute; top: 1080px; left: 300px; width: 300px; height: 200px; background-color: red;">Avanzar</button>
+    <button onclick="retroceder(this)" class="textMessagesBlack" id="retroceder"
+        style="position: absolute; top: 1080px; left: 0px; width: 300px; height: 200px; background-color: red">Retroceder</button>
+    <button onclick="direct(this)" class="textMessagesBlack" id="botonDirect"
+        style="position: absolute; top: 1080px; left: 600px; width: 300px; height: 200px; background-color: red">Anuncio</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const avanzarBtn = document.getElementById('avanzar');
+        const retrocederBtn = document.getElementById('retroceder');
+        let socket = io();
+        let showRuns = [];
+        let cont = <%-JSON.stringify(horarioCounter)%>;
+        let commands = <%-JSON.stringify(commandsUsed)%>;
+        let lista;
+        let runs = <%-JSON.stringify(nextRuns)%>;
+
+        socket.on('default-next', () =>{
+            console.log('default-next');
+            avanzar(avanzarBtn);
+        })
+        socket.on('back-next', () =>{
+            console.log('back-next');
+            retroceder(retrocederBtn);
+        })
+        socket.on('manual-next', (contador) =>{
+            let lista = document.getElementById('nextRunsList')
+            while(lista.firstChild){
+                lista.removeChild(lista.firstChild)
+            }
+            showRuns = [];
+            cont = contador;
+            getNextRuns()
+            // document.location.reload(true);
+        })
+    </script>
+
+    <script>
+        let pressedDirect = false
+
+        //constant times
+        const duration1 = 2
+        const duration2 = 10
+        const duration3 = 5
+        const duration4 = 30
+        let date = new Date();
+
+        //constant values
+        const openedWidth = '1088px'
+        const closedWidth = '28px'
+        const height = '90px'
+        const offsetLeft = 500
+        const offsetRight = -570
+        const offsetTop = 200
+        
+        // let cont = 7;
+        let cont2 = 0;
+        const max = 5;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            getNextRuns()
+            // currentTime()
+            animatedLogos()
+            showCommands(commands)
+            let timeLine = gsap.timeline({
+                repeat: -1,
+                repeatDelay: 10
+            })
+            messagesBar(timeLine)
+            nextBar(timeLine)
+            socialBar(timeLine)
+
+        })
+
+
+        function aparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth, delay) {
+            //aparecer barra
+            timeLine.set('.animated-bars', {
+                x: offsetLeft,
+                y: offsetTop,
+                height: height,
+                filter: 'none',
+                width: closedWidth,
+            })
+            timeLine.set('.animated-bars-right-side', {
+                x: offsetRight,
+                y: offsetTop,
+                height: height,
+                filter: 'none',
+            })
+            timeLine.to('.animated-bars', {
+                duration: duration1,
+                x: offsetLeft,
+                y: offsetTop,
+                height: height,
+                width: closedWidth,
+                delay: delay
+            })
+            timeLine.to('.animated-bars', {
+                duration: duration1,
+                x: offsetLeft,
+                y: 0,
+                height: height,
+                width: closedWidth,
+                filter: 'drop-shadow(0 0 5px #801b76)',
+            }, `-=${duration1}`)
+
+            timeLine.to('.animated-bars-right-side', {
+                duration: duration1,
+                x: offsetRight,
+                y: offsetTop,
+                height: height,
+            }, `-=${duration1}`)
+            timeLine.to('.animated-bars-right-side', {
+                duration: duration1,
+                x: offsetRight,
+                y: 0,
+                height: height,
+                filter: 'drop-shadow(0 0 5px #801b76)',
+            }, `-=${duration1}`)
+        }
+
+        function desaparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth) {
+
+            //desaparecer barras
+            timeLine.to('.animated-bars', {
+                duration: duration1,
+                x: offsetLeft,
+                y: offsetTop,
+                height: height,
+                width: closedWidth,
+            })
+
+
+            timeLine.to('.animated-bars-right-side', {
+                duration: duration1,
+                x: offsetRight,
+                y: offsetTop,
+                height: height,
+            }, `-=${duration1}`)
+        }
+
+        function agrandarBarras(timeLine, duration1, height, openedWidth) {
+            //agrandar barra hacia laterales
+            timeLine.to('.animated-bars', {
+                duration: duration1,
+                x: 0,
+                y: 0,
+                height: height,
+                width: openedWidth,
+            })
+
+            timeLine.to('.animated-bars-right-side', {
+                duration: duration1,
+                x: -11,
+                y: 0,
+                height: height,
+            }, `-=${duration1}`)
+        }
+
+        function cerrarBarras(timeLine, duration1, offsetLeft, offsetRight, height, closedWidth, duration2) {
+            //cerrar las barras hacia el centro
+            timeLine.to('.animated-bars', {
+                duration: duration1,
+                x: offsetLeft,
+                y: 0,
+                height: height,
+                width: closedWidth,
+                delay: duration2,
+            }, )
+
+            timeLine.to('.animated-bars-right-side', {
+                duration: duration1,
+                x: offsetRight,
+                y: 0,
+                height: height,
+            }, `-=${duration1}`)
+        }
+
+        function nextBar(timeLine) {
+            //setting extra info with opacity 0
+            timeLine.set('#social-container', {
+                opacity: 0
+            })
+            timeLine.set('#messages-container', {
+                opacity: 0
+            })
+
+            //seting this bar with opacity 1
+            timeLine.set('#next-container', {
+                opacity: 1
+            })
+
+            aparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth, duration4)
+
+            agrandarBarras(timeLine, duration1, height, openedWidth)
+
+            timeLine.to(['#announceRunsList span'], {
+                duration: duration1,
+                x: -1112,
+                delay: 5
+            })
+
+            timeLine.to(['#arrowsRunsList'], {
+                duration: duration1,
+                x: -2112,
+            }, '-=1')
+
+
+
+            timeLine.to(['#nextRunsList'], {
+                duration: duration1,
+                x: -1112,
+                delay: .5
+            }, '-=2')
+
+
+            cerrarBarras(timeLine, duration1, offsetLeft, offsetRight, height, closedWidth, duration2 * 2)
+
+            desaparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth)
+        }
+
+        function socialBar(timeLine) {
+            //setting extra info with opacity 0
+            timeLine.set('#next-container', {
+                opacity: 0
+            })
+            timeLine.set('#messages-container', {
+                opacity: 0
+            })
+
+            //seting this bar with opacity 1
+            timeLine.set('#social-container', {
+                opacity: 1
+            })
+
+            aparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth, duration4)
+
+            agrandarBarras(timeLine, duration1, height, openedWidth)
+
+            cerrarBarras(timeLine, duration1, offsetLeft, offsetRight, height, closedWidth, duration3)
+
+            //cambiar a twitter
+            timeLine.set('#socialList', {
+                y: -100
+            })
+
+            agrandarBarras(timeLine, duration1, height, openedWidth)
+
+            cerrarBarras(timeLine, duration1, offsetLeft, offsetRight, height, closedWidth, duration2)
+
+            //cambiar a youtube
+            timeLine.set('#socialList', {
+                y: -207
+            })
+
+            agrandarBarras(timeLine, duration1, height, openedWidth)
+
+            cerrarBarras(timeLine, duration1, offsetLeft, offsetRight, height, closedWidth, duration2)
+
+            //Dejandolo en default
+            timeLine.set('#socialList', {
+                y: 0
+            })
+
+            desaparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth)
+
+        }
+
+        function messagesBar(timeLine) {
+            //setting extra info with opacity 0
+            timeLine.set('#next-container', {
+                opacity: 0
+            })
+            timeLine.set('#social-container', {
+                opacity: 0
+            })
+
+            //seting this bar with opacity 1
+            timeLine.set('#messages-container', {
+                opacity: 1
+            })
+
+            aparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth, duration4)
+
+            agrandarBarras(timeLine, duration1, height, openedWidth)
+
+            cerrarBarras(timeLine, duration1, offsetLeft, offsetRight, height, closedWidth, duration2)
+
+            desaparecerBarras(timeLine, duration1, offsetLeft, offsetRight, offsetTop, height, closedWidth)
+
+        }
+
+        function getNextRuns() {
+            lista = document.getElementById('nextRunsList')
+            console.log('contador que llego', cont);
+
+            console.log(cont, runs.length, showRuns.length, max);
+            while (cont < runs.length && showRuns.length < max) {
+
+                let div = document.createElement('div');
+                div.classList.add('childList');
+                div.id = `${cont}`;
+
+
+                let span = document.createElement('span')
+                span.classList.add('runTitle')
+                span.classList.add('textBlack')
+                span.innerHTML = `${runs[cont]['title']}`
+                div.appendChild(span)
+
+
+                let spanCategory = document.createElement('span')
+                spanCategory.classList.add('runCategory')
+                spanCategory.classList.add('textMedium')
+                spanCategory.innerHTML = `${runs[cont]['category']}`
+                div.appendChild(spanCategory)
+
+
+                lista.appendChild(div)
+                showRuns.push(runs[cont])
+                cont2++;
+                cont++;
+            }
+            console.log(lista);
+            cont2 == 0;
+        }
+
+        async function avanzar(button) {
+            lista = document.getElementById('nextRunsList')
+            let first = lista.firstChild;
+            let div;
+            if (cont < runs.length) {
+                div = document.createElement('div');
+                div.classList.add('childList');
+                div.id = `${cont}`;
+
+
+                let span = document.createElement('span')
+                span.classList.add('runTitle')
+                span.classList.add('textBlack')
+                span.innerHTML = `${runs[cont]['title']}`
+                div.appendChild(span)
+
+
+                let spanCategory = document.createElement('span')
+                spanCategory.classList.add('runCategory')
+                spanCategory.classList.add('textMedium')
+                spanCategory.innerHTML = `${runs[cont]['category']}`
+                div.appendChild(spanCategory)
+
+                let tl = gsap.timeline({
+                    repeat: 0,
+                })
+
+                await tl.set(div, {
+                    opacity: 0
+                })
+
+                lista.appendChild(div)
+
+                tl.to(div, {
+                    duration: 1,
+                    opacity: 1,
+                })
+                showRuns.push(runs[cont])
+                cont++;
+
+
+                await tl.to(first, {
+                    duration: 2,
+                    width: 0,
+                    opacity: 0,
+                    x: -200
+                }, '-=1')
+
+                lista.removeChild(lista.firstChild)
+
+                showRuns.shift()
+            } else {
+                let tl = gsap.timeline({
+                    repeat: 0,
+                })
+
+                await tl.to(first, {
+                    duration: 2,
+                    x: -200,
+                    opacity: 0,
+                    width: 0
+                })
+
+                lista.removeChild(lista.firstChild);
+                showRuns.shift()
+            }
+
+            if (lista.getElementsByTagName('div').length === 0) {
+                let div = document.createElement('div');
+                div.classList.add('childList');
+                let span = document.createElement('span')
+                span.classList.add('runTitle')
+                span.classList.add('textBlack')
+                span.innerHTML = `Despedida`
+                div.appendChild(span)
+
+                let spanCategory = document.createElement('span')
+                spanCategory.classList.add('runCategory')
+                spanCategory.classList.add('textMedium')
+                spanCategory.innerHTML = `Cry %`
+                div.appendChild(spanCategory)
+
+                lista.appendChild(div)
+            }
+        }
+
+        async function retroceder(button) {
+            lista = document.getElementById('nextRunsList')
+
+            if (cont > 0) {
+                cont--;
+                let div = document.createElement('div');
+                div.classList.add('childList');
+                div.id = parseInt(lista.firstChild.id) - 1;
+
+                let span = document.createElement('span')
+                span.classList.add('runTitle')
+                span.classList.add('textBlack')
+                span.innerHTML = `${runs[div.id]['title']}`
+                div.appendChild(span)
+
+
+                let spanCategory = document.createElement('span')
+                spanCategory.classList.add('runCategory')
+                spanCategory.classList.add('textMedium')
+                spanCategory.innerHTML = `${runs[div.id]['category']}`
+                div.appendChild(spanCategory)
+
+                let tl = gsap.timeline({
+                    repeat: 0,
+                })
+
+                tl.set(div, {
+                    opacity: 0,
+                    width: 0,
+                    x: -200
+                })
+
+                // lista.appendChild(div)
+                lista.insertBefore(div, lista.childNodes[0]);
+
+                tl.to(div, {
+                    duration: 2,
+                    opacity: 1,
+                    width: 200,
+                    x: 0
+                })
+                showRuns.unshift(runs[div.id])
+
+                if (lista.childNodes.length > max) {
+
+                    await tl.to(lista.lastChild, {
+                        duration: 1,
+                        opacity: 0,
+                        x: 200
+                    }, '-=2')
+
+                    lista.removeChild(lista.lastChild)
+                    showRuns.pop()
+                } else {
+                    if (lista.childNodes.length < max + 1)
+                        cont++;
+                    while (cont > runs.length)
+                        cont--;
+                }
+            }
+        }
+
+        function animatedLogos() {
+            let timeLineLogos = gsap.timeline({
+                repeat: -1,
+                repeatDelay: 0
+            })
+
+            const duration1 = 2
+            const duration2 = 20
+
+            timeLineLogos.set(['#sre'], {
+                opacity: 0
+            })
+
+            timeLineLogos.to('#gdq', {
+                duration: duration1,
+                opacity: 0,
+                delay: duration2
+            })
+
+            timeLineLogos.to('#sre', {
+                duration: duration1,
+                opacity: 1,
+            }, `-=${duration1}`)
+
+            timeLineLogos.to('#sre', {
+                duration: duration1,
+                opacity: 0,
+                delay: duration2
+            })
+
+            timeLineLogos.to('#gdq', {
+                duration: duration1,
+                opacity: 1
+            })
+        }
+
+        function direct(button) {
+
+            let tl = gsap.timeline({})
+            if (pressedDirect) {
+                pressedDirect = !pressedDirect
+                tl.to('#direct', {
+                    duration: duration1,
+                    x: 0
+                })
+            } else {
+                pressedDirect = !pressedDirect
+                tl.to('#direct', {
+                    duration: duration1,
+                    x: -340
+                })
+            }
+
+        }
+
+
+        function showCommands(commands) {
+            const offset = -212
+
+            selectCommand()
+            let timeLineCmd = new TimelineMax({
+                repeat: -1,
+                repeatDelay: 30,
+                onRepeat: selectCommand
+            })
+
+            const duration1 = 1.5
+
+            timeLineCmd.set('#commands', {
+                x: offset
+            })
+
+            timeLineCmd.to('#commands', {
+                duration: duration1,
+                x: 0
+            })
+
+            timeLineCmd.to('#commands', {
+                duration: duration1,
+                x: offset,
+                delay: 10
+            })
+        }
+
+        function selectCommand() {
+            commandDiv = document.getElementById('commands')
+            for (let i = 0; i < commandDiv.childNodes.length; i++) {
+                const child = commandDiv.childNodes[i];
+                if (child.id === 'command') {
+                    commandDiv.removeChild(child)
+                }
+            }
+
+            let command = document.createElement('span')
+            command.id = 'command'
+            command.classList.add('textBlack')
+            command.innerHTML = `${commands[Math.floor(Math.random()* commands.length)]}`
+            commandDiv.appendChild(command)
+        }
+
+        async function currentTime() {
+            let date = new Date(); /* creating object of Date class */
+            await updateRunsList(date)
+            // console.log('Your local: ' + date);
+            let t = setTimeout(currentTime, 1000);
+        }
+
+        function compareTimes(actualTime, runDate) {
+            return actualTime > runDate
+        }
+
+        async function updateRunsList(actualTime) {
+            if (showRuns) {
+                let first = showRuns[0]
+                // console.log('actual time' + actualTime);
+                console.log('compare time' + first.date);
+                if (compareTimes(actualTime, new Date(first.date))) {
+                    // if(compareTimes(new Date('2021-01-03T14:30:00-03:00'), new Date(first.date))){
+                    console.log('o quizas si');
+                    await avanzar(null)
+                } else {
+                    console.log('todavia no');
+                }
+            }
+            // console.log(showRuns);
+        }
+    </script>
+
+</body>
+
+</html>
